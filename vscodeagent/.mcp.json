@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "vscodeagent-docs": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["./mcp-server/dist/index.js", "stdio"]
+    }
+  }
+}

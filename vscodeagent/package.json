@@ -1,0 +1,27 @@
+{
+  "name": "vscodeagent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -p mcp-server/tsconfig.json",
+    "test": "tsx --test mcp-server/test/*.test.ts",
+    "check": "npm run build && npm test",
+    "mcp:stdio": "node mcp-server/dist/index.js stdio",
+    "mcp:http": "node mcp-server/dist/index.js http",
+    "mcp:dev:stdio": "tsx mcp-server/src/index.ts stdio",
+    "mcp:dev:http": "tsx mcp-server/src/index.ts http"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.31.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}

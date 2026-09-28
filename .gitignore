@@ -1,0 +1,14 @@
+# Node.js dependencies
+node_modules/
+
+# Generated build and test output
+dist/
+coverage/
+
+# Local documentation caches
+.cache/
+
+# Local environment files
+.env
+.env.*
+!.env.example
