@@ -12,3 +12,4 @@ coverage/
 .env
 .env.*
 !.env.example
+!vscodeagent/deploy/vscode-docs-mcp/.env.example

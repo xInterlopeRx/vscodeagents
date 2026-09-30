@@ -12,10 +12,12 @@ const maxDocumentBytes = 2 * 1024 * 1024;
 const licenseName = "Creative Commons Attribution 3.0 United States (CC BY 3.0 US)";
 const licenseUrl = "https://creativecommons.org/licenses/by/3.0/us/";
 
-const defaultCacheDirectory = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "../../.cache/vscodeagent-docs",
-);
+const defaultCacheDirectory = process.env.VSCA_CACHE_DIR
+  ? path.resolve(process.env.VSCA_CACHE_DIR)
+  : path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      "../../.cache/vscodeagent-docs",
+    );
 
 export interface CachedOfficialDocument {
   sourceId: OfficialDocSourceId;

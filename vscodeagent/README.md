@@ -32,6 +32,12 @@ See the [local agent and MCP testing guide](docs/local-agent-and-mcp-testing.md)
 
 The server also supports Streamable HTTP for later remote use. It listens on `127.0.0.1:3100` by default. A non-loopback bind requires `MCP_AUTH_TOKEN` with at least 32 characters. Browser `Origin` headers are restricted to the bind host or exact origins in `MCP_ALLOWED_ORIGINS`. The HTTP endpoint is `/mcp`; `/healthz` is a minimal unauthenticated health check. Remote deployment and client configuration are tracked in `TODO.md`; no server is currently installed on `operatorx`.
 
+## Container deployment
+
+`deploy/vscode-docs-mcp/` contains a multi-stage Docker build and a dedicated Compose project for the HTTP server. The container runs as the unprivileged Node user with a read-only root filesystem, a 256 MiB memory limit, and a persistent volume only for the official-doc cache. Compose publishes to loopback by default; set `MCP_PUBLISHED_HOST` to a specific LAN interface only when remote access is intended, and provide a private `MCP_AUTH_TOKEN` of at least 32 characters. Put TLS or a protected VPN/tunnel in front of LAN access. Copy `.env.example` to `.env` for a deployment; never commit `.env`. See the [container deployment guide](deploy/vscode-docs-mcp/README.md) for versioned GHCR images and release instructions.
+
+From this directory, build and run the isolated project with `docker compose -f deploy/vscode-docs-mcp/compose.yaml up -d --build`; inspect it with `docker compose -f deploy/vscode-docs-mcp/compose.yaml ps` and stop it with `docker compose -f deploy/vscode-docs-mcp/compose.yaml down`. The current Ansible DevTools MCP package is stdio-only; its packaged `--ws` option reports WebSocket support unavailable. A stdio-to-Streamable-HTTP gateway is required for remote HTTP clients.
+
 ## Project context
 
 - `AGENTS.md` contains contributor and operational safety guidance.
