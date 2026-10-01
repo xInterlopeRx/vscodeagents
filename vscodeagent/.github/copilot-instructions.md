@@ -1,4 +1,4 @@
-# Repository instructions
+once the tests pass, commit all the remaining changes and push, no version bump since it should only be docsfile: Repository instructions
 
 ## Build, test, and run
 
