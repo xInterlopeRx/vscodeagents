@@ -10,7 +10,9 @@ The agent's workflows cover:
 - Inspecting and safely changing VS Code settings across local Windows/Linux, WSL, and remote extension hosts.
 - Recommending tools and extensions based on compatibility, publisher, maintenance, permissions, and evidence.
 
-The workspace custom agent lives in `.github/agents/`; reusable workflows live in `.github/skills/`. The same Markdown agent and skills are intended to work across supported Copilot clients.
+The workspace custom agent lives in `.github/agents/`; reusable workflows live in `.github/skills/`. The skills and documentation are portable, while the VS Code specialist's write-capable tool set targets the VS Code harness; Copilot CLI may not expose the same editor-specific tools.
+
+In VS Code sessions, the specialist can use client-provided file, terminal, extension, and command tools to carry out approved settings changes, extension management, and tests. Each mutating operation requires separate explicit user approval and targets the active WSL extension host by default. These are agent/client capabilities; the documentation MCP server remains read-only.
 
 ## Documentation MCP and local cache
 

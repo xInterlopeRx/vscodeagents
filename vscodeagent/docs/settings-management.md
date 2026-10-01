@@ -15,4 +15,8 @@ Change only the requested key and preserve JSONC comments and unrelated settings
 
 Afterward, verify the effective value in the Settings UI and test the affected behavior on the correct host. Report scope conflicts, policy restrictions, or platform limitations instead of claiming success from the file edit alone.
 
+## Agent-operated settings changes
+
+The VS Code specialist may use VS Code client tools to inspect or edit settings. Before each write, identify whether the target is workspace, user, or remote-user scope; name the setting key and proposed value; and state which profile and extension host it affects. Obtain explicit approval for each write. The default target is the active WSL workspace/extension host; do not infer that Windows-local settings are in scope from a WSL filesystem path.
+
 See the current [VS Code settings documentation](https://code.visualstudio.com/docs/configure/settings) and [Remote Development overview](https://code.visualstudio.com/docs/remote/remote-overview).

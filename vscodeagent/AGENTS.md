@@ -10,7 +10,9 @@
 
 - Before changing settings or extensions, identify the exact VS Code instance, profile, workspace, and extension host. Distinguish local Windows/Linux, WSL, SSH, Dev Container, and other remote authorities.
 - Inspect the current setting value and its scope before proposing or editing it. Preserve unrelated settings and JSONC comments; back up files before direct edits and verify the effective value afterward.
-- Do not install, remove, or upgrade extensions or change user/remote settings without approval for the target and action. Confirm an extension's exact publisher and identifier before installation.
+- The VS Code specialist agent may use VS Code built-in tools and the integrated terminal for settings, extension management, and extension tests when those tools are available. Tool availability is not consent.
+- For every individual settings write, extension install/removal/upgrade, side-effecting VS Code command, terminal mutation, or test run that executes extension code, explain the exact operation, scope/extension host, and likely effects, then obtain explicit user approval before invoking the tool. One approval does not cover a batch of distinct actions. Confirm an extension's publisher, identifier, version/compatibility, and install target before installation; confirm identifier and target before removal.
+- Default target is the active WSL workspace and its WSL extension host. Verify it before acting; do not modify the Windows-local profile or another remote host unless the user explicitly selects it. Prefer a disposable Extension Development Host or test profile for extension-code tests. Never use sudo; ask the user to perform any step that requires elevated privileges.
 - Never infer a Windows path from a WSL path or assume that a local VS Code CLI controls a remote extension host.
 - Prefer current official VS Code documentation and validate platform- or version-specific instructions.
 

@@ -13,7 +13,11 @@ This guide covers setup and local testing of the workspace agent, its skills, an
 | Local guides                 | `docs/`                                     | Project-authored guidance, available offline.                                                                               |
 | Official documentation cache | `.cache/vscodeagent-docs/`                  | Untracked cache of documents from the fixed official-source catalog.                                                        |
 
-The agent is not a VS Code extension and does not need to be installed from the Marketplace. The workspace configuration starts a local Node.js process; it does not install extensions or edit VS Code settings.
+The agent is not a VS Code extension and does not need to be installed from the Marketplace. The workspace configuration starts a local Node.js process; that documentation MCP server does not install extensions or edit VS Code settings. Separately, when the specialist runs in VS Code with its built-in tools available, it can inspect/edit files, run terminal commands, manage extensions, and invoke VS Code commands.
+
+### Approval boundary for VS Code actions
+
+The specialist's default target is the active WSL workspace and its WSL extension host. Verify the active VS Code instance, profile, and extension host before changing anything. Ask for separate explicit approval before each settings write, extension install/removal/upgrade, side-effecting command, terminal mutation, or extension test run. Report the setting scope/key/value or extension publisher/ID/version, target host, and expected effects. Tool availability does not bypass VS Code's own approval prompts. Prefer a disposable Extension Development Host or test profile for tests that execute extension code; never silently use the Windows-local extension host or another remote host.
 
 ## Requirements
 

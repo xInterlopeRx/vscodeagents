@@ -17,3 +17,7 @@ For extension code, use the existing launch configuration to start an Extension 
 Use the official [Extension API](https://code.visualstudio.com/api) and [testing guidance](https://code.visualstudio.com/api/working-with-extensions/testing-extension). Before changing an extension, inspect its manifest, scripts, tests, activation events, contribution points, dependencies, and `engines.vscode`.
 
 Prefer explicit activation events and declarative contributions. Test changed behavior, activation, error cases, compatibility, and package contents as applicable. Report separately any verification that requires an actual VS Code Extension Development Host.
+
+## Agent-operated extension actions
+
+The VS Code specialist can use client tools to inspect Marketplace entries, install extensions, invoke VS Code commands, and run extension tests. Before each action, identify the exact publisher/extension ID, version, target profile/extension host, command or test, and expected effects; obtain a separate explicit user approval before proceeding. The default target is the active WSL extension host, not the Windows-local host. For removal, re-check the exact ID and host; use a VS Code command or CLI only after verifying it targets that host. Extension tests execute extension code, so prefer a disposable Extension Development Host or test profile and obtain separate approval for the test run.

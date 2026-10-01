@@ -1,6 +1,6 @@
 # Documentation MCP Architecture
 
-The MCP server searches Markdown in this repository's `docs/` directory, caches selected official VS Code documentation, and maintains a local knowledge cache for filtered web research explicitly submitted by the agent. It provides tools to list, search, read, refresh approved official documents, and search, read, or store local knowledge entries. It does not install extensions, edit settings, run arbitrary commands, or fetch arbitrary URLs.
+The MCP server searches Markdown in this repository's `docs/` directory, caches selected official VS Code documentation, and maintains a local knowledge cache for filtered web research explicitly submitted by the agent. It provides tools to list, search, read, refresh approved official documents, and search, read, or store local knowledge entries. It does not install extensions, edit settings, run arbitrary commands, or fetch arbitrary URLs. Those restrictions apply to the documentation MCP server, not the specialist agent's separate VS Code client tools, which require per-action user approval for mutations.
 
 Official sources are selected from a fixed catalog. Cache entries retain their upstream URL, official page URL, attribution, license, SHA-256, fetch time, and conditional request headers. Fresh entries are served locally for seven days; stale entries are revalidated with ETag/Last-Modified where possible. The cache is kept under `.cache/` and is not committed. A failed refresh is reported, and an existing stale copy is clearly marked rather than presented as current.
 

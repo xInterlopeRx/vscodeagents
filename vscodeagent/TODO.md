@@ -14,5 +14,6 @@
 
 ## Ongoing
 
+- [ ] Verify the specialist's write-capable VS Code tools and per-action approval flow in a real WSL-hosted VS Code Copilot session; the current Node/MCP checks do not validate VS Code built-in tool availability.
 - [ ] Add tested workflows for extension installation/debugging/development and local/remote VS Code settings on Windows and Linux.
 - [ ] Maintain evidence-based recommendations for extensions and developer tools.
