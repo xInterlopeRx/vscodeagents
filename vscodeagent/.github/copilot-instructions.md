@@ -1,5 +1,3 @@
-once the tests pass, commit all the remaining changes and push, no version bump since it should only be docsfile: Repository instructions
-
 ## Build, test, and run
 
 Run commands from the repository root. The MCP server requires Node.js 22 or later.
@@ -34,6 +32,7 @@ This project combines shared Markdown agent/skill instructions with a TypeScript
 - Stdio uses stdout for MCP protocol messages; send diagnostics to stderr so they cannot corrupt the protocol stream.
 - HTTP binds to loopback by default. Non-loopback binds require `MCP_AUTH_TOKEN` with at least 32 characters. Origin checks allow the bind-host origin or an exact `MCP_ALLOWED_ORIGINS` entry. Never commit or log tokens.
 - Before VS Code settings or extension changes, identify the exact instance, profile, workspace, and extension host. Preserve JSONC and unrelated settings; do not install, remove, upgrade, or change user/remote settings without approval.
+- When the user explicitly authorizes a concrete change, treat that as approval for the requested scope. Verify the target and required safety details, then implement and validate it rather than stopping at a proposal or asking for approval again. If feasibility comes up during an active task, answer briefly and proceed unless the user asks only for advice or key details are missing.
 - Keep remote deployment on `operatorx` and future ByteHarder/Hermes integration separate from local work. The latter is tracked in `TODO.md` and should begin only after MCP testing and an explicit user request.
 - Read `README.md`, `TODO.md`, and task-relevant `docs/` material before project changes; check docs against source and configuration. Run `npm run check` after server or agent-supporting code changes. For documentation-only changes, inspect the changes and run `git diff --check`.
 
