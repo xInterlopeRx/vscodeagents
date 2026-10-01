@@ -90,7 +90,7 @@ For an interactive test:
 4. Select the `vscode-specialist` agent with `/agent vscode-specialist`, or start a session with `copilot --agent vscode-specialist`.
 5. Ask a cache-first question, for example:
 
-  > Search the local VS Code guides and cached knowledge for extension-host settings first. If there is no suitable fresh result, explain what source needs checking before using any web tool. Do not fetch official documents or scrape pages for this check.
+> Search the local VS Code guides and cached knowledge for extension-host settings first. If there is no suitable fresh result, explain what source needs checking before using any web tool. Do not fetch official documents or scrape pages for this check.
 
 6. Confirm in the session that the MCP tool was actually invoked and returned the expected path. A model response that merely describes the tools is not a successful MCP test.
 
