@@ -1,8 +1,16 @@
 # Documentation MCP Architecture
 
-The MCP server searches Markdown in this repository's `docs/` directory and a local cache of selected official VS Code documentation. It provides tools to list, search, read, and refresh cached documents. It does not install extensions, edit settings, run arbitrary commands, or fetch arbitrary URLs.
+The MCP server searches Markdown in this repository's `docs/` directory, caches selected official VS Code documentation, and maintains a local knowledge cache for filtered web research explicitly submitted by the agent. It provides tools to list, search, read, refresh approved official documents, and search, read, or store local knowledge entries. It does not install extensions, edit settings, run arbitrary commands, or fetch arbitrary URLs.
 
 Official sources are selected from a fixed catalog. Cache entries retain their upstream URL, official page URL, attribution, license, SHA-256, fetch time, and conditional request headers. Fresh entries are served locally for seven days; stale entries are revalidated with ETag/Last-Modified where possible. The cache is kept under `.cache/` and is not committed. A failed refresh is reported, and an existing stale copy is clearly marked rather than presented as current.
+
+## Local knowledge cache
+
+The `search_cached_vscode_knowledge`, `read_cached_vscode_knowledge`, and `store_vscode_knowledge` tools operate only on local files under `.cache/vscodeagent-docs/knowledge/`; none of them access the network. The agent checks this cache before using the separate Firecrawl MCP for general web research, and checks a known URL before scraping it.
+
+Entries are keyed by canonical HTTP(S) URL and retain the source URL, Firecrawl operation, title, filtered Markdown summary, topic tags, SHA-256, and timestamps. Useful entries are fresh for 30 days. Broken, blocked, and irrelevant URLs are retained as negative results for 24 hours to avoid immediate repeat attempts. A failed revisit to a useful page records the failure while preserving the last useful content. Expired entries are marked stale rather than silently treated as current.
+
+Store concise, factual notes that answer the research question, not full scraped page dumps. Preserve source URLs for citations and exclude credentials, secrets, and personal data. Add topic/query synonyms as tags to improve future cache hits. This cache is a persistent local knowledge base, not model training or shared source documentation.
 
 ## Client formats
 

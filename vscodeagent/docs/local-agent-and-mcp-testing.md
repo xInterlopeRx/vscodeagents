@@ -4,14 +4,14 @@ This guide covers setup and local testing of the workspace agent, its skills, an
 
 ## What is included
 
-| Component | Location | Purpose |
-| --- | --- | --- |
-| VS Code specialist agent | `.github/agents/vscode-specialist.agent.md` | Reusable instructions for extension, settings, and developer-tool workflows. |
-| Project skills | `.github/skills/` | Detailed extension workflow, settings management, and tool evaluation procedures. |
-| Workspace MCP configuration | `.mcp.json` | Starts the local documentation server over stdio for supported clients. |
-| MCP implementation | `mcp-server/src/` | Lists, searches, and reads local guides and approved cached VS Code documentation. |
-| Local guides | `docs/` | Project-authored guidance, available offline. |
-| Official documentation cache | `.cache/vscodeagent-docs/` | Untracked cache of documents from the fixed official-source catalog. |
+| Component                    | Location                                    | Purpose                                                                                                                     |
+| ---------------------------- | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| VS Code specialist agent     | `.github/agents/vscode-specialist.agent.md` | Reusable instructions for extension, settings, and developer-tool workflows.                                                |
+| Project skills               | `.github/skills/`                           | Detailed extension workflow, settings management, and tool evaluation procedures.                                           |
+| Workspace MCP configuration  | `.mcp.json`                                 | Starts the local documentation server over stdio for supported clients.                                                     |
+| MCP implementation           | `mcp-server/src/`                           | Lists, searches, and reads local guides, approved cached VS Code documentation, and locally retained filtered web research. |
+| Local guides                 | `docs/`                                     | Project-authored guidance, available offline.                                                                               |
+| Official documentation cache | `.cache/vscodeagent-docs/`                  | Untracked cache of documents from the fixed official-source catalog.                                                        |
 
 The agent is not a VS Code extension and does not need to be installed from the Marketplace. The workspace configuration starts a local Node.js process; it does not install extensions or edit VS Code settings.
 
@@ -57,15 +57,18 @@ Clients start the process when needed and exchange MCP messages over standard in
 
 The server exposes these tools:
 
-| Tool | Use |
-| --- | --- |
-| `list_vscode_docs` | List local guides and cached official documents. An optional `limit` is from 1 to 100. |
-| `search_vscode_docs` | Search local and cached Markdown. `query` must be 2-200 characters; optional `limit` is from 1 to 20. |
-| `read_vscode_doc` | Read a document by the relative path returned from list/search, or a cached official document identifier using the `official:` prefix. |
-| `list_official_vscode_doc_sources` | List the fixed approved official-source catalog and cache status. |
-| `fetch_official_vscode_doc` | Fetch or refresh a selected catalog entry. This may access the network and update the local cache. Arbitrary URLs are not accepted. |
+| Tool                               | Use                                                                                                                                    |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `list_vscode_docs`                 | List local guides and cached official documents. An optional `limit` is from 1 to 100.                                                 |
+| `search_vscode_docs`               | Search local and cached Markdown. `query` must be 2-200 characters; optional `limit` is from 1 to 20.                                  |
+| `read_vscode_doc`                  | Read a document by the relative path returned from list/search, or a cached official document identifier using the `official:` prefix. |
+| `list_official_vscode_doc_sources` | List the fixed approved official-source catalog and cache status.                                                                      |
+| `fetch_official_vscode_doc`        | Fetch or refresh a selected catalog entry. This may access the network and update the local cache. Arbitrary URLs are not accepted.    |
+| `search_cached_vscode_knowledge`   | Search local filtered Firecrawl summaries. This tool never accesses the network.                                                       |
+| `read_cached_vscode_knowledge`     | Look up a URL and report fresh, stale, negative, or missing cache status. This tool never accesses the network.                        |
+| `store_vscode_knowledge`           | Store a concise filtered result or a negative URL outcome locally. This tool never fetches the URL.                                    |
 
-For a basic local smoke test, use `list_vscode_docs`, `search_vscode_docs`, and `read_vscode_doc`. Avoid `fetch_official_vscode_doc` unless you specifically intend to refresh an approved source.
+For a basic local smoke test, use `list_vscode_docs`, `search_vscode_docs`, and `read_vscode_doc`. To exercise the knowledge cache, store a short test summary, read it by URL, search for its text, and record a negative test URL; the protocol test covers both positive and negative entries. Avoid `fetch_official_vscode_doc` unless you specifically intend to refresh an approved source.
 
 ## Test in GitHub Copilot CLI
 
@@ -85,9 +88,9 @@ For an interactive test:
 2. Start Copilot CLI in this workspace. If the workspace is untrusted, follow the CLI's trust flow only after reviewing the configuration.
 3. Run `/env` and verify that the expected project agent, skills, and `vscodeagent-docs` server are loaded. Run `/mcp` to inspect MCP server configuration and controls.
 4. Select the `vscode-specialist` agent with `/agent vscode-specialist`, or start a session with `copilot --agent vscode-specialist`.
-5. Ask a read-only question, for example:
+5. Ask a cache-first question, for example:
 
-   > Use `vscodeagent-docs` to list local documents and report the path of `mcp-architecture.md`. Do not fetch official documents or use unrelated tools.
+  > Search the local VS Code guides and cached knowledge for extension-host settings first. If there is no suitable fresh result, explain what source needs checking before using any web tool. Do not fetch official documents or scrape pages for this check.
 
 6. Confirm in the session that the MCP tool was actually invoked and returned the expected path. A model response that merely describes the tools is not a successful MCP test.
 
@@ -110,20 +113,20 @@ For a remote workspace, verify that Node.js is installed on the host where VS Co
 
 ## Troubleshooting
 
-| Symptom | Checks |
-| --- | --- |
-| Build reports a missing dependency or Node version | Confirm Node.js is 22 or newer. On a fresh checkout, run `npm ci`, then `npm run build`. |
-| MCP server does not start | Confirm the workspace root is open, `mcp-server/dist/index.js` exists, and `node` is available on the process host. In VS Code, inspect **MCP: List Servers** > **Show Output**. |
-| CLI does not list `vscodeagent-docs` | Run the CLI from the workspace root and inspect `.mcp.json`; check workspace trust and `copilot mcp list`. |
+| Symptom                                                  | Checks                                                                                                                                                                                                                       |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Build reports a missing dependency or Node version       | Confirm Node.js is 22 or newer. On a fresh checkout, run `npm ci`, then `npm run build`.                                                                                                                                     |
+| MCP server does not start                                | Confirm the workspace root is open, `mcp-server/dist/index.js` exists, and `node` is available on the process host. In VS Code, inspect **MCP: List Servers** > **Show Output**.                                             |
+| CLI does not list `vscodeagent-docs`                     | Run the CLI from the workspace root and inspect `.mcp.json`; check workspace trust and `copilot mcp list`.                                                                                                                   |
 | CLI lists the server but a session cannot call its tools | Inspect `/env` and `/mcp` in that session. Configuration discovery is not the same as a successful server start or tool call. Check the exact tool allowlist, workspace trust, and CLI output before changing configuration. |
-| Agent is missing from a picker | Confirm `.github/agents/vscode-specialist.agent.md` is in the opened workspace and select the expected agent harness/profile. In CLI, try `/agent vscode-specialist`. |
-| Local documentation is missing or stale | Local project guides should work offline. Check the selected path and server output. Cached official documents can be revalidated only through the fixed source catalog; a fetch may require network access. |
-| Results differ between local and remote windows | Record the active profile and extension host, then verify files, Node.js, trust, and MCP output on the machine that runs the workspace server. |
+| Agent is missing from a picker                           | Confirm `.github/agents/vscode-specialist.agent.md` is in the opened workspace and select the expected agent harness/profile. In CLI, try `/agent vscode-specialist`.                                                        |
+| Local documentation is missing or stale                  | Local project guides should work offline. Check the selected path and server output. Cached official documents can be revalidated only through the fixed source catalog; a fetch may require network access.                 |
+| Results differ between local and remote windows          | Record the active profile and extension host, then verify files, Node.js, trust, and MCP output on the machine that runs the workspace server.                                                                               |
 
 ## Security and scope
 
 - Review the command in `.mcp.json` and the MCP implementation before trusting or starting a local server.
-- The list, search, and read tools operate on local Markdown and cached documents. The official-document fetch tool makes network requests to a fixed allowlist and writes cache data under the ignored `.cache/` directory.
+- Local docs and knowledge search/read/store tools operate only on local files. The official-document fetch tool makes network requests only to the fixed allowlist. Firecrawl search/scrape are separate network tools; use the local cache first and store only filtered summaries or factual negative outcomes under the ignored `.cache/` directory.
 - Do not put credentials in `.mcp.json`, commit cache contents, or add arbitrary-URL fetching.
 - This guide covers local stdio use only. HTTP deployment, non-loopback access, tokens, and remote-client configuration require separate review; see [MCP architecture](./mcp-architecture.md).
 - ByteHarder/Hermes integration belongs to the separate ByteHarder project and is not part of local testing.

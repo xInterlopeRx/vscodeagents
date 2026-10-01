@@ -1,6 +1,6 @@
 # VS Code Agent
 
-A portable VS Code specialist agent for GitHub Copilot in VS Code and Copilot CLI, with a read-only MCP server for local Markdown documentation.
+A portable VS Code specialist agent for GitHub Copilot in VS Code and Copilot CLI, with a documentation MCP server and a local cache for filtered web research.
 
 ## Project scope
 
@@ -14,9 +14,11 @@ The workspace custom agent lives in `.github/agents/`; reusable workflows live i
 
 ## Documentation MCP and local cache
 
-The MCP server searches Markdown under `docs/` and an untracked local cache of selected official VS Code documentation. It exposes `list_vscode_docs`, `search_vscode_docs`, `read_vscode_doc`, `list_official_vscode_doc_sources`, and `fetch_official_vscode_doc`.
+The MCP server searches Markdown under `docs/`, caches selected official VS Code documentation, and stores filtered web knowledge explicitly provided by the agent. It exposes local document and approved-source tools plus `search_cached_vscode_knowledge`, `read_cached_vscode_knowledge`, and `store_vscode_knowledge`. The cache tools do not perform web requests; the separate Firecrawl MCP handles search and scraping.
 
-The official source catalog is fixed to Microsoft’s public VS Code documentation repository. A cache miss fetches the selected source; fresh entries are served locally for seven days, then revalidated with ETag/Last-Modified when available. Cached entries retain the official page URL, upstream URL, attribution, license, fetch time, and SHA-256. Downloaded docs and cache metadata live under `.cache/` and are gitignored. The initial project-authored guides remain available offline.
+The official source catalog is fixed to Microsoft’s public VS Code documentation repository. A cache miss fetches the selected source; fresh entries are served locally for seven days, then revalidated with ETag/Last-Modified when available. Cached entries retain the official page URL, upstream URL, attribution, license, fetch time, and SHA-256.
+
+Filtered Firecrawl research lives under `.cache/vscodeagent-docs/knowledge/`, keyed by canonical source URL. Useful summaries remain fresh for 30 days; stale entries are marked, and broken, blocked, or irrelevant URLs are remembered for 24 hours before retry. Failed revisits preserve any useful summary and record the failure separately. All cache data is gitignored. Search these local caches before making web requests to reduce repeat hits.
 
 Requirements: Node.js 22 or later.
 
@@ -34,7 +36,7 @@ The server also supports Streamable HTTP for later remote use. It listens on `12
 
 ## Container deployment
 
-`deploy/vscode-docs-mcp/` contains a multi-stage Docker build and a dedicated Compose project for the HTTP server. The container runs as the unprivileged Node user with a read-only root filesystem, a 256 MiB memory limit, and a persistent volume only for the official-doc cache. Compose publishes to loopback by default; set `MCP_PUBLISHED_HOST` to a specific LAN interface only when remote access is intended, and provide a private `MCP_AUTH_TOKEN` of at least 32 characters. Put TLS or a protected VPN/tunnel in front of LAN access. Copy `.env.example` to `.env` for a deployment; never commit `.env`. See the [container deployment guide](deploy/vscode-docs-mcp/README.md) for versioned GHCR images and release instructions.
+`deploy/vscode-docs-mcp/` contains a multi-stage Docker build and a dedicated Compose project for the HTTP server. The container runs as the unprivileged Node user with a read-only root filesystem, a 256 MiB memory limit, and a persistent volume for official docs and filtered knowledge. Compose publishes to loopback by default; set `MCP_PUBLISHED_HOST` to a specific LAN interface only when remote access is intended, and provide a private `MCP_AUTH_TOKEN` of at least 32 characters. Put TLS or a protected VPN/tunnel in front of LAN access. Copy `.env.example` to `.env` for a deployment; never commit `.env`. See the [container deployment guide](deploy/vscode-docs-mcp/README.md) for versioned GHCR images and release instructions.
 
 From this directory, build and run the isolated project with `docker compose -f deploy/vscode-docs-mcp/compose.yaml up -d --build`; inspect it with `docker compose -f deploy/vscode-docs-mcp/compose.yaml ps` and stop it with `docker compose -f deploy/vscode-docs-mcp/compose.yaml down`. The current Ansible DevTools MCP package is stdio-only; its packaged `--ws` option reports WebSocket support unavailable. A stdio-to-Streamable-HTTP gateway is required for remote HTTP clients.
 

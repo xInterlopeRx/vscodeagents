@@ -21,13 +21,14 @@ The available server entry points are `npm run mcp:stdio` and `npm run mcp:dev:s
 
 ## Architecture
 
-This project combines shared Markdown agent/skill instructions with a TypeScript documentation MCP server. `.github/agents/vscode-specialist.agent.md` defines the reusable specialist; `.github/skills/` contains focused workflows. The root `.mcp.json` starts the server over stdio for Copilot CLI and VS Code.
+This project combines shared Markdown agent/skill instructions with a TypeScript documentation and knowledge-cache MCP server. `.github/agents/vscode-specialist.agent.md` defines the reusable specialist; `.github/skills/` contains focused workflows. The root `.mcp.json` starts the server over stdio for Copilot CLI and VS Code.
 
-`mcp-server/src/index.ts` selects stdio or HTTP transport, and `server.ts` registers the MCP tools. Local document listing, search, and reads are implemented in `docs.ts` and confined to Markdown under `docs/`. `sources.ts` is the fixed official-document catalog; `cache.ts` fetches only those sources and stores content with attribution, license, timestamps, and SHA-256 metadata in `.cache/vscodeagent-docs/`. HTTP transport lives in `http.ts`, with bind, token, and Origin checks in `http-security.ts`.
+`mcp-server/src/index.ts` selects stdio or HTTP transport, and `server.ts` registers the MCP tools. Local document listing, search, and reads are implemented in `docs.ts` and confined to Markdown under `docs/`. `sources.ts` is the fixed official-document catalog; `cache.ts` fetches only those sources and stores content with attribution, license, timestamps, and SHA-256 metadata in `.cache/vscodeagent-docs/`. `knowledge-cache.ts` stores and searches concise Firecrawl results explicitly submitted by the agent; its lookup, search, and store tools do not access the network. HTTP transport lives in `http.ts`, with bind, token, and Origin checks in `http-security.ts`.
 
 ## Repository-specific conventions
 
 - Keep the official documentation source set fixed; do not add arbitrary-URL fetching. `cache.ts` revalidates stale entries after seven days and preserves source/page URLs, attribution, license, hash, fetch time, and freshness metadata. Do not commit `.cache/` contents.
+- For web research, check `search_vscode_docs` and `search_cached_vscode_knowledge` before using Firecrawl; check a known page with `read_cached_vscode_knowledge` before scraping it. Store only concise, filtered facts with provenance and topic tags, never full page dumps, secrets, credentials, or personal data. Useful entries are fresh for 30 days; failed, blocked, or irrelevant URLs are remembered for 24 hours before retry. These cache tools are local-only; web requests stay in the separate Firecrawl MCP.
 - Preserve path confinement in `docs.ts`: local reads must resolve to Markdown files inside the documentation root.
 - Keep the root `.mcp.json` as the shared workspace configuration; do not add a duplicate `.vscode/mcp.json`. Copilot CLI loads project MCP configuration only in a trusted workspace.
 - Stdio uses stdout for MCP protocol messages; send diagnostics to stderr so they cannot corrupt the protocol stream.

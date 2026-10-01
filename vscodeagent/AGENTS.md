@@ -16,8 +16,9 @@
 
 ## MCP server safety
 
-- Keep documentation tools limited to listing, searching, reading, and caching documents from the fixed official-source catalog. Never add arbitrary-URL fetching.
+- Keep official-document fetching limited to the fixed source catalog; never add arbitrary-URL fetching to this MCP server. Its local knowledge-cache tools may search, read, and store concise filtered Firecrawl research explicitly provided by the agent, but must not fetch URLs themselves.
 - Cache official documentation with its source URL, attribution, license, hash, fetch time, and freshness status. Do not commit downloaded documentation or cache files.
+- Check local documentation and knowledge caches before Firecrawl. Preserve source URLs and freshness, summarize rather than copy full pages, and never cache secrets, credentials, or personal data. Negative URL results have a retry cooldown; a failed revisit must not replace useful cached content.
 - Bind HTTP mode to loopback unless remote access is explicitly needed. Require a strong bearer token for non-loopback binds and restrict browser origins; never commit tokens or expose them in logs.
 - Keep remote deployment on `operatorx` separate from this repository's local development until the deployment task is approved.
 

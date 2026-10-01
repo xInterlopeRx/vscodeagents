@@ -10,6 +10,11 @@ import {
   searchCachedOfficialDocuments,
 } from "./cache.js";
 import { listDocuments, readDocument, searchDocuments } from "./docs.js";
+import {
+  readCachedKnowledge,
+  searchCachedKnowledge,
+  storeKnowledgeResult,
+} from "./knowledge-cache.js";
 import { OFFICIAL_DOC_SOURCES } from "./sources.js";
 
 const defaultDocsDirectory = path.resolve(
@@ -31,7 +36,8 @@ export function createDocsServer(
     "list_vscode_docs",
     {
       title: "List local VS Code documentation",
-      description: "List available Markdown documents in the local VS Code-agent documentation pack.",
+      description:
+        "List available Markdown documents in the local VS Code-agent documentation pack.",
       inputSchema: {
         limit: z.number().int().min(1).max(100).optional(),
       },
@@ -57,7 +63,8 @@ export function createDocsServer(
     "search_vscode_docs",
     {
       title: "Search local VS Code documentation",
-      description: "Search local Markdown guidance about VS Code, extensions, settings, and MCP.",
+      description:
+        "Search local Markdown guidance about VS Code, extensions, settings, and MCP.",
       inputSchema: {
         query: z.string().trim().min(2).max(200),
         limit: z.number().int().min(1).max(20).optional(),
@@ -69,7 +76,10 @@ export function createDocsServer(
         searchCachedOfficialDocuments(query, limit),
       ]);
       const results = [...localResults, ...cachedResults]
-        .sort((left, right) => right.score - left.score || left.path.localeCompare(right.path))
+        .sort(
+          (left, right) =>
+            right.score - left.score || left.path.localeCompare(right.path),
+        )
         .slice(0, limit ?? 5);
       return {
         content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
@@ -78,10 +88,88 @@ export function createDocsServer(
   );
 
   server.registerTool(
+    "search_cached_vscode_knowledge",
+    {
+      title: "Search cached web knowledge",
+      description:
+        "Search locally retained, filtered web research. This tool never accesses the network.",
+      inputSchema: {
+        query: z.string().trim().min(2).max(200),
+        limit: z.number().int().min(1).max(20).optional(),
+      },
+    },
+    async ({ query, limit }) => ({
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(
+            await searchCachedKnowledge(query, limit),
+            null,
+            2,
+          ),
+        },
+      ],
+    }),
+  );
+
+  server.registerTool(
+    "read_cached_vscode_knowledge",
+    {
+      title: "Read cached web knowledge",
+      description:
+        "Look up a URL in the local knowledge cache, including fresh, stale, and recently rejected or broken results. This tool never accesses the network.",
+      inputSchema: {
+        url: z.string().url().max(2048),
+      },
+    },
+    async ({ url }) => ({
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(await readCachedKnowledge(url), null, 2),
+        },
+      ],
+    }),
+  );
+
+  server.registerTool(
+    "store_vscode_knowledge",
+    {
+      title: "Store filtered web research",
+      description:
+        "Persist a concise, filtered Firecrawl result or a negative result for a URL. This tool does not fetch URLs. Cache only useful facts and source context, not secrets or unfiltered page dumps.",
+      inputSchema: {
+        url: z.string().url().max(2048),
+        source: z.enum(["firecrawl_search", "firecrawl_scrape"]),
+        outcome: z.enum(["cached", "broken", "irrelevant", "blocked"]),
+        title: z.string().trim().max(300).optional(),
+        content: z.string().max(400_000).optional(),
+        note: z.string().trim().max(2000).optional(),
+        tags: z.array(z.string().trim().min(1).max(60)).max(20).optional(),
+      },
+    },
+    async ({ url, source, outcome, title, content, note, tags }) => {
+      const result = await storeKnowledgeResult({
+        url,
+        source,
+        outcome,
+        ...(title ? { title } : {}),
+        ...(content !== undefined ? { content } : {}),
+        ...(note ? { note } : {}),
+        ...(tags ? { tags } : {}),
+      });
+      return {
+        content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+      };
+    },
+  );
+
+  server.registerTool(
     "read_vscode_doc",
     {
       title: "Read a local VS Code document",
-      description: "Read a Markdown document by its relative path from list_vscode_docs or search_vscode_docs.",
+      description:
+        "Read a Markdown document by its relative path from list_vscode_docs or search_vscode_docs.",
       inputSchema: {
         path: z.string().min(1).max(500),
       },
@@ -91,27 +179,31 @@ export function createDocsServer(
         const sourceId = requestedPath.slice("official:".length);
         const document = await readCachedOfficialDocument(sourceId);
         return {
-          content: [{
-            type: "text",
-            text: [
-              `# ${document.title}`,
-              `Source: ${document.pageUrl}`,
-              `Cache status: ${document.cacheStatus} (${document.cachedAt})`,
-              `Attribution: ${document.attribution}`,
-              `License: ${document.license} (${document.licenseUrl})`,
-              `SHA-256: ${document.sha256}`,
-              "",
-              document.content,
-            ].join("\n"),
-          }],
+          content: [
+            {
+              type: "text",
+              text: [
+                `# ${document.title}`,
+                `Source: ${document.pageUrl}`,
+                `Cache status: ${document.cacheStatus} (${document.cachedAt})`,
+                `Attribution: ${document.attribution}`,
+                `License: ${document.license} (${document.licenseUrl})`,
+                `SHA-256: ${document.sha256}`,
+                "",
+                document.content,
+              ].join("\n"),
+            },
+          ],
         };
       }
       const document = await readDocument(docsDirectory, requestedPath);
       return {
-        content: [{
-          type: "text",
-          text: `# ${document.title}\n\nPath: ${document.path}\n\n${document.content}`,
-        }],
+        content: [
+          {
+            type: "text",
+            text: `# ${document.title}\n\nPath: ${document.path}\n\n${document.content}`,
+          },
+        ],
       };
     },
   );
@@ -120,7 +212,8 @@ export function createDocsServer(
     "list_official_vscode_doc_sources",
     {
       title: "List approved official VS Code documentation sources",
-      description: "List the fixed allowlist of official documentation sources and their local cache status.",
+      description:
+        "List the fixed allowlist of official documentation sources and their local cache status.",
       inputSchema: {
         cached_only: z.boolean().optional(),
       },
@@ -131,7 +224,9 @@ export function createDocsServer(
         ? sources.filter((source) => source.cached)
         : sources;
       return {
-        content: [{ type: "text", text: JSON.stringify(filteredSources, null, 2) }],
+        content: [
+          { type: "text", text: JSON.stringify(filteredSources, null, 2) },
+        ],
       };
     },
   );
@@ -144,7 +239,8 @@ export function createDocsServer(
     "fetch_official_vscode_doc",
     {
       title: "Fetch or refresh a cached official VS Code document",
-      description: "Fetch one document from the fixed official-source catalog, cache it locally, and return its source, license, freshness, and content. Arbitrary URLs are not accepted.",
+      description:
+        "Fetch one document from the fixed official-source catalog, cache it locally, and return its source, license, freshness, and content. Arbitrary URLs are not accepted.",
       inputSchema: {
         source_id: z.enum(sourceIds),
         refresh: z.boolean().optional(),
@@ -156,20 +252,22 @@ export function createDocsServer(
         ? `Refresh failed; serving stale cached content. Error: ${document.refreshError}\n\n`
         : "";
       return {
-        content: [{
-          type: "text",
-          text: [
-            warning,
-            `# ${document.title}`,
-            `Source: ${document.pageUrl}`,
-            `Cache status: ${document.cacheStatus} (${document.cachedAt})`,
-            `Attribution: ${document.attribution}`,
-            `License: ${document.license} (${document.licenseUrl})`,
-            `SHA-256: ${document.sha256}`,
-            "",
-            document.content,
-          ].join("\n"),
-        }],
+        content: [
+          {
+            type: "text",
+            text: [
+              warning,
+              `# ${document.title}`,
+              `Source: ${document.pageUrl}`,
+              `Cache status: ${document.cacheStatus} (${document.cachedAt})`,
+              `Attribution: ${document.attribution}`,
+              `License: ${document.license} (${document.licenseUrl})`,
+              `SHA-256: ${document.sha256}`,
+              "",
+              document.content,
+            ].join("\n"),
+          },
+        ],
         ...(document.refreshError ? { isError: true } : {}),
       };
     },

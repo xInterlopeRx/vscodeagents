@@ -1,6 +1,6 @@
 # VS Code docs MCP container
 
-This directory contains the Docker/Compose deployment for the VS Code documentation MCP server. The image is built from the project source and lockfile; its runtime listens on Streamable HTTP at `/mcp` and keeps the official-doc cache in a named volume.
+This directory contains the Docker/Compose deployment for the VS Code documentation MCP server. The image is built from the project source and lockfile; its runtime listens on Streamable HTTP at `/mcp` and keeps official-doc and filtered-knowledge caches in a named volume.
 
 ## Run a published image
 
