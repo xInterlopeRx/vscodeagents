@@ -8,8 +8,8 @@ After the repository is public, run these commands from WSL. The installer is do
 
 ```sh
 curl --proto '=https' --tlsv1.2 --fail --location --silent --show-error \
-	--output install-wsl.sh \
-	https://raw.githubusercontent.com/xInterlopeRx/vscodeagents/main/vscodeagent/deploy/vscode-docs-mcp/install-wsl.sh
+  --output install-wsl.sh \
+  https://raw.githubusercontent.com/xInterlopeRx/vscodeagents/a247d388a0e1ea9af00b1443df2ec84a16f88228/vscodeagent/deploy/vscode-docs-mcp/install-wsl.sh
 bash install-wsl.sh
 rm -- install-wsl.sh
 ```
